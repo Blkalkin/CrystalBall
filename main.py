@@ -1,8 +1,9 @@
 import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from groq import Groq
+
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from groq import Groq
+from pydantic import BaseModel
 
 # Load environment variables from .env file
 load_dotenv()
@@ -42,6 +43,15 @@ async def chat_with_groq(request: ChatRequest):
         return ChatResponse(response=response_content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with Groq: {str(e)}")
+
+@app.post("/chatWithToolhouse", response_model=ChatResponse)
+async def chat_with_toolhouse(request: ChatRequest):
+    # This is a placeholder function for chat completion with Toolhouse
+    return ChatResponse(response="This is a placeholder response from Toolhouse")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
