@@ -16,9 +16,9 @@ the fastapi server. Use localhost:8000/docs to test.
 
 
 Todo EOD:
-- Final prompt to o1
-- Clean up
+- ~~Final prompt to o1~~
+- ~~Clean up~~
 - Test toolhouse integration
-- Full run with our Data 
-- Stretch* Generating Data in batches with LLM.
+- Full run with our Data - Ran into rate limit, need to bring up with Groq tomorrow
+- Stretch* Generating Data in batches with LLM. - Unable to complete, - see if I can get something in the early am if I feel like it
 
