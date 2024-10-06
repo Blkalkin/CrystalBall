@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from groq import Groq
 from openai import AsyncOpenAI
 from pydantic import BaseModel
+
 from agent import get_final_reasoning, run_agent_processing
 from model import Agent, EventContext
 
@@ -103,7 +104,7 @@ async def process_agents_and_get_final_reasoning(event_context: EventContext):
     try:
         processed_agents = await run_agent_processing(csv_file_path, event_context)
         final_reasoning = await get_final_reasoning(processed_agents, event_context)
-        return {"final_reasoning": final_reasoning}
+        return {"agents": processed_agents, "final_reasoning": final_reasoning}
     except Exception as e:
         print(f"Error in process_agents_and_get_final_reasoning: {str(e)}")  # Add this line for debugging
         raise HTTPException(status_code=500, detail=f"Error processing agents and getting final reasoning: {str(e)}")
