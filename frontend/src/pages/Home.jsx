@@ -1,5 +1,5 @@
 // Home.js
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import CrystalBall from '../assets/CrystalBall.png'; // Assuming the image is in the assets folder
 
 function Home() {

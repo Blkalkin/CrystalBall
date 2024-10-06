@@ -1,4 +1,3 @@
-import React from 'react';
 
 function Output({ prompt = "Sample Prompt", date = "2023-01-01", stock = "S&P 500", result = { trend: "increase", decrease: 10, neutral: 20, increase: 70 }, themes = [
   { title: "Economic Growth", description: "Economic growth is a key driver of stock market performance. When the economy is growing, businesses tend to perform better, leading to higher stock prices. Investors are more confident in the market, and there is generally more liquidity. This theme explores the various factors that contribute to economic growth, such as consumer spending, business investment, government policies, and global trade." },
