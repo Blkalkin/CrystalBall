@@ -91,4 +91,6 @@ async def get_real_context(agent_object, question):
         tools=th.get_tools("bitsandbills"),
     )
 
-    return response.choices[0].message.content
+    agent_object["realContext"] = response.choices[0].message.content
+
+    return agent_object
