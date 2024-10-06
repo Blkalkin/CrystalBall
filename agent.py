@@ -57,7 +57,9 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
     async def process_agent(agent: Agent, model: str):
         system_prompt = get_process_agents_system_prompt(event_context)
         user_prompt = get_process_agents_user_prompt(agent, event_context)
-        
+
+        response_content = ""  # Initialize the variable
+
         try:
             chat_completion = await client.chat.completions.create(
                 messages=[
@@ -66,7 +68,6 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
                 ],
                 model=model,
             )
-
             response_content = chat_completion.choices[0].message.content
 
             try:
@@ -84,14 +85,14 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
                 agent.llmResponse = LLMResponse(
                     direction=Direction.HOLD,
                     strength=0.0,
-                    rationale=f"Error in processing response with model {model}. Raw content: {response_content}"
+                    rationale=f"Error processing response with model {model}. Raw content: {response_content}"
                 )
         except Exception as e:
             print(f"Error processing agent {agent.name} with model {model}: {str(e)}")
             agent.llmResponse = LLMResponse(
                     direction=Direction.HOLD,
                     strength=0.0,
-                    rationale=f"Error in processing response with model {model}. Raw content: {response_content}"
+                    rationale=f"Error processing response with model {model}. Raw content: {response_content}"
                 )
         
         return agent
@@ -141,7 +142,7 @@ async def run_agent_processing(csv_file_path: str, event_context: EventContext) 
     processed_agents = await process_agents(csv_file_path, event_context)
     return [agent.dict() for agent in processed_agents]
 
-async def get_final_reasoning(processed_agents: List[Dict], event_context: EventContext) -> Dict:
+async def get_final_reasoning(processed_agents, event_context: EventContext) -> Dict:
     client = AsyncOpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=os.getenv("OPENROUTER_API_KEY")
@@ -149,20 +150,12 @@ async def get_final_reasoning(processed_agents: List[Dict], event_context: Event
     
     system_prompt = get_final_reasoning_system_prompt()
     
-    # Convert processed_agents to the format expected by the prompt
-    agent_data = [
-        {
-            "name": agent["name"],
-            "category": agent["category"],
-            "direction": agent["llmResponse"]["direction"],
-            "probability": agent["llmResponse"]["strength"],
-        }
-        for agent in processed_agents
-    ]
-    
-    agent_dict_str = json.dumps(agent_data)
-    
-    user_prompt = get_final_reasoning_agent_prompt(agent_dict_str, event_context)
+    user_prompt = get_final_reasoning_agent_prompt(processed_agents, event_context)
+
+    # Truncate user prompt if it exceeds 30,000 words
+    user_prompt_words = user_prompt.split()
+    if len(user_prompt_words) > 30000:
+        user_prompt = ' '.join(user_prompt_words[:30000])
     
     try:
         chat_completion = await client.chat.completions.create(
@@ -174,33 +167,20 @@ async def get_final_reasoning(processed_agents: List[Dict], event_context: Event
         )
         
         response_content = chat_completion.choices[0].message.content
-        
-        preprocessed_content = preprocess_json(response_content)
-        final_reasoning = json.loads(preprocessed_content)
-        
-        return final_reasoning
-    except json.JSONDecodeError as e:
-        print(f"JSON parsing error in final reasoning: {str(e)}")
-        return {
-            "market_prediction": "NEUTRAL",
-            "buy_percentage": 0.0,
-            "sell_percentage": 0.0,
-            "hold_percentage": 100.0,
-            "weighted_buy_probability": 0.0,
-            "weighted_sell_probability": 0.0,
-            "summary": "Error in processing final reasoning",
-            "notable_divergences": "N/A"
-        }
+        return response_content
     except Exception as e:
         print(f"Error in get_final_reasoning: {str(e)}")
-        return {
-            "market_prediction": "NEUTRAL",
-            "buy_percentage": 0.0,
-            "sell_percentage": 0.0,
-            "hold_percentage": 100.0,
-            "weighted_buy_probability": 0.0,
-            "weighted_sell_probability": 0.0,
-            "summary": "Error in processing final reasoning",
-            "notable_divergences": "N/A"
-        }
+        return get_error_response("Error in processing final reasoning")
+
+def get_error_response(error_message: str) -> Dict:
+    return {
+        "market_prediction": "NEUTRAL",
+        "buy_percentage": 0.0,
+        "sell_percentage": 0.0,
+        "hold_percentage": 100.0,
+        "weighted_buy_probability": 0.0,
+        "weighted_sell_probability": 0.0,
+        "summary": error_message,
+        "notable_divergences": "N/A"
+    }
 

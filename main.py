@@ -1,4 +1,7 @@
 import os
+import csv
+from datetime import datetime
+from io import StringIO  
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -90,23 +93,43 @@ async def health_check():
 
 @app.post("/processAgents")
 async def process_agents(event_context: EventContext):
-    csv_file_path = 'AgentTestData.csv'  # Hardcoded CSV file path
+    input_csv_file_path = 'AgentTestData.csv'  # Hardcoded input CSV file path
     try:
-        processed_agents = await run_agent_processing(csv_file_path, event_context)
-        return {"agents": processed_agents}
+        processed_agents = await run_agent_processing(input_csv_file_path, event_context)
+        
+        output_csv_file_path = f'ProcessedAgents.csv'
+        
+        # Save processed agents to the new CSV file
+        with open(output_csv_file_path, 'w', newline='') as csvfile:
+            fieldnames = ['name', 'category', 'subcategory', 'weight', 'description', 'isReal', 'realContext', 'llmResponse']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for agent in processed_agents:
+                writer.writerow(agent)
+        
+        return {"agents": processed_agents, "output_file": output_csv_file_path}
     except Exception as e:
         print(f"Error in process_agents: {str(e)}")  # Add this line for debugging
         raise HTTPException(status_code=500, detail=f"Error processing agents: {str(e)}")
 
 @app.post("/getFinalReasoning")
 async def process_agents_and_get_final_reasoning(event_context: EventContext):
-    csv_file_path = 'AgentTestData.csv'  # Hardcoded CSV file path
+    csv_file_path = 'ProcessedAgents.csv'  # Hardcoded CSV file path
+    
     try:
-        processed_agents = await run_agent_processing(csv_file_path, event_context)
-        final_reasoning = await get_final_reasoning(processed_agents, event_context)
-        return {"agents": processed_agents, "final_reasoning": final_reasoning}
+        # Load the CSV file and convert it to a string
+        with open(csv_file_path, 'r') as file:
+            csv_data = file.read()
+        
+        # Create a StringIO object from the CSV string
+        csv_string = StringIO(csv_data)
+        
+        # Pass the CSV string to the get_final_reasoning function
+        final_reasoning = await get_final_reasoning(csv_string, event_context)
+        
+        return {"final_reasoning": final_reasoning}
     except Exception as e:
-        print(f"Error in process_agents_and_get_final_reasoning: {str(e)}")  # Add this line for debugging
+        print(f"Error in process_agents_and_get_final_reasoning: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing agents and getting final reasoning: {str(e)}")
 
 if __name__ == "__main__":
