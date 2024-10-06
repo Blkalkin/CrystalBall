@@ -12,7 +12,6 @@ app = FastAPI()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable is not set")
-
 class ChatRequest(BaseModel):
     message: str
 
@@ -42,7 +41,7 @@ async def chat_with_groq(request: ChatRequest):
         return ChatResponse(response=response_content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with Groq: {str(e)}")
-
+        
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
