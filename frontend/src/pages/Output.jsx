@@ -9,7 +9,16 @@ function Output(
 // ], sources = [{ name: "Sample Source", rationale: "Sample Rationale", categories: ["Cat1", "Cat2"] }] }
 ) {
 
-    const [data, setDate] = useState([]);
+    const location = useLocation();
+    const { searchValue, selectedStock, selectedDate } = location.state;
+    const [data, setData] = useState({
+      prompt: searchValue,
+      date: selectedDate,
+      stock: selectedStock,
+      result: { trend: "", decrease: 0, neutral: 0, increase: 0 },
+      themes: [],
+      sources: []
+    });
 
     useEffect(() => {
         try {
