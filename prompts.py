@@ -9,7 +9,7 @@ def get_process_agents_system_prompt(event_context: EventContext):
 
 
 def get_process_agents_user_prompt(agent: Agent, event_context: EventContext):
-    return f"""You are playing the role of {agent.name}, who or which is a {agent.type}. Here's a description of your investment approach and you: {agent.description}
+    return f"""You are playing the role of {agent.name}, who or which is a {agent.category}. Here's a description of your investment approach and you: {agent.description}
 
 A recent event has come up in the news and social media: {event_context.posed_question}. The date of this event is {event_context.date}.
 
@@ -70,19 +70,19 @@ Here are the responses from the 1,000 personas:
 
 
 # ACTION NEEDED - NEED TO UPDATE the below to fill in the variable DECISION
-def get_final_themes_system_prompt(event_context: EventContext, DECISION: str):
+def get_final_themes_system_prompt(event_context: EventContext, agent: Agent):
     return f"""You are a sophisticated financial analysis AI designed to aggregate and interpret investment decisions from a diverse group of 1,000 personas, including individuals and institutions. Your primary focus is on analyzing reactions to specific events and their potential impact on the S&P 500 index.
 Your tasks are as follows:
 
-Aggregate the rationale from the personas who made the decision to {DECISION}.
+Aggregate the rationale from the personas who made the decision to {agent.llmResponse.direction}.
 
-Based on this, write a 1 paragraph summary of why these personas made the decision to {DECISION}. Please be sure to outline the key factors and themes that emerged from the rationale, and any notable divergences in opinion among different types of investors (e.g., institutional vs. retail).
+Based on this, write a 1 paragraph summary of why these personas made the decision to {agent.llmResponse.direction}. Please be sure to outline the key factors and themes that emerged from the rationale, and any notable divergences in opinion among different types of investors (e.g., institutional vs. retail).
 
 Your response must be a string."""
 
 
 # ACTION NEEDED - NEED TO UPDATE the below to fill in the variables, replace agent_dict with a subset of data
-def get_final_themes_agent_prompt(agent_dict: str, event_context: EventContext):
+def get_final_themes_agent_prompt(event_context: EventContext, agent: Agent):
     return f"""Analyze the market sentiment for the instrument {event_context.instrument} in response to the following event:
 {event_context.posed_question}
 You have been provided with responses from about 1,000 diverse personas, each representing different types of investors. Each response is in a JSON-like format with the following structure:
