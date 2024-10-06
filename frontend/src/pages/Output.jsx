@@ -128,35 +128,6 @@ function Output(
             <p className="text-left mt-2">{themes_result_hold.description}</p>
           </div>
         </div>
-
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2 text-left">Segment Summary</h2>
-          <div className="flex overflow-x-scroll space-x-4">
-            {themes.map((theme, index) => (
-              <div key={index} className={`p-4 border border-gray-300 rounded-lg shadow-sm w-64 ${index % 2 === 0 ? 'bg-blue-100' : 'bg-green-100'}`}>
-                <h3 className="text-lg font-semibold text-left">{theme.title}</h3>
-                <p className="text-left">{theme.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2 text-left">Source Sample Set</h2>
-          <p className="text-sm text-gray-500 mb-4 text-left">Showing 50/1000</p>
-          {sources.map((source, index) => (
-            <div key={index} className="p-4 border border-gray-300 rounded-lg shadow-sm mb-4 w-64">
-              <h3 className="text-lg font-semibold text-left">{source.name}</h3>
-              <p className="mb-2 text-left">{source.rationale}</p>
-              <div className="flex flex-wrap">
-                {source.categories.map((category, idx) => (
-                  <span key={idx} className="px-2 py-1 bg-gray-200 rounded-full text-sm mr-2 mb-2">{category}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
       </div>
     </div>
   );
