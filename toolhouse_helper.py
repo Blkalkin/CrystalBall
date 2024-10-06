@@ -13,7 +13,7 @@ from toolhouse import Toolhouse
 from constants import API_URL
 from prompts import (
     get_toolhouse_helper_question_type_prompt,
-    get_toolhouse_helper_real_context_prompt,
+    get_toolhouse_real_context_prompt,
 )
 
 load_dotenv()
@@ -42,7 +42,7 @@ async def get_real_context(agent_object, question):
     if question_type is None:
         return None
 
-    prompt = get_toolhouse_helper_real_context_prompt(name, question_type)
+    prompt = get_toolhouse_real_context_prompt(name, question_type)
 
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
     MODEL = "llama3-groq-70b-8192-tool-use-preview"

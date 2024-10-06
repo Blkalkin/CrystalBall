@@ -3,8 +3,9 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from groq import Groq
+from openai import AsyncOpenAI
 from pydantic import BaseModel
-from agent import run_agent_processing
+from agent import get_final_reasoning, run_agent_processing
 from model import Agent
 
 from toolhouse_helper import get_real_context
@@ -17,6 +18,10 @@ app = FastAPI()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable is not set")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY environment variable is not set")
+
 class ChatRequest(BaseModel):
     message: str
 
@@ -46,6 +51,20 @@ async def chat_with_groq(request: ChatRequest):
         return ChatResponse(response=response_content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with Groq: {str(e)}")
+    
+@app.post("/chatWithOpenAI", response_model=ChatResponse)
+async def chat_with_openai(request: ChatRequest):
+    try:
+        client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        response = await client.chat.completions.create(
+            messages=[
+                {"role": "user", "content": request.message}
+            ],
+            model="gpt-4o"
+        )
+        return ChatResponse(response=response.choices[0].message.content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error communicating with OpenAI: {str(e)}")
 
 @app.post("/chatWithToolhouse", response_model=ChatResponse)
 async def chat_with_toolhouse(request: ChatRequest):
@@ -59,21 +78,30 @@ async def get_real_context(request: Agent):
         raise HTTPException(status_code=500, detail="Error getting real context")
     return ChatResponse(response=response)
 
-
-
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
 
-@app.get("/processAgents")
-async def process_agents():
+@app.post("/processAgents")
+async def process_agents(event_context: str):
     csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
     try:
-        processed_agents = await run_agent_processing(csv_file_path)
+        processed_agents = await run_agent_processing(csv_file_path, event_context)
         return {"agents": processed_agents}
     except Exception as e:
         print(f"Error in process_agents: {str(e)}")  # Add this line for debugging
         raise HTTPException(status_code=500, detail=f"Error processing agents: {str(e)}")
+
+@app.post("/getFinalReasoning")
+async def process_agents_and_get_final_reasoning(event_context: str):
+    csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
+    try:
+        processed_agents = await run_agent_processing(csv_file_path, event_context)
+        final_reasoning = await get_final_reasoning(processed_agents, event_context)
+        return {"final_reasoning": final_reasoning}
+    except Exception as e:
+        print(f"Error in process_agents_and_get_final_reasoning: {str(e)}")  # Add this line for debugging
+        raise HTTPException(status_code=500, detail=f"Error processing agents and getting final reasoning: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
