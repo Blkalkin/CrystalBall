@@ -84,7 +84,7 @@ async def health_check():
 
 @app.post("/processAgents")
 async def process_agents(event_context: str):
-    csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
+    csv_file_path = 'AgentTestData.csv'  # Hardcoded CSV file path
     try:
         processed_agents = await run_agent_processing(csv_file_path, event_context)
         return {"agents": processed_agents}
@@ -94,7 +94,7 @@ async def process_agents(event_context: str):
 
 @app.post("/getFinalReasoning")
 async def process_agents_and_get_final_reasoning(event_context: str):
-    csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
+    csv_file_path = 'AgentTestData.csv'  # Hardcoded CSV file path
     try:
         processed_agents = await run_agent_processing(csv_file_path, event_context)
         final_reasoning = await get_final_reasoning(processed_agents, event_context)
