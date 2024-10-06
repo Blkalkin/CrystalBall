@@ -114,19 +114,19 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
 
     # Process agents in batches
     all_tasks = real_agent_tasks + non_real_agent_tasks
-    batch_size = len(all_tasks) // 3  # Divide tasks into 3 batches
+    batch_size = len(all_tasks) // 2  # Divide tasks into 2 batches
     processed_agents = []
 
-    for i in range(3):
+    for i in range(2):
         start_idx = i * batch_size
         end_idx = start_idx + batch_size if i < 2 else len(all_tasks)
         
-        print(f"Processing batch {i+1} of 3...")
+        print(f"Processing batch {i+1} of 2...")
         batch_tasks = all_tasks[start_idx:end_idx]
         batch_results = await asyncio.gather(*batch_tasks)
         processed_agents.extend(batch_results)
         
-        if i < 2:  # Don't wait after the last batch
+        if i < 1:  # Don't wait after the last batch
             print(f"Waiting 60 seconds before next batch...")
             await asyncio.sleep(60)  # Wait for 60 seconds
 
