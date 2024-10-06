@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from groq import Groq
 from pydantic import BaseModel
+from agent import run_agent_processing
 
 # Load environment variables from .env file
 load_dotenv()
@@ -51,6 +52,16 @@ async def chat_with_toolhouse(request: ChatRequest):
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+@app.get("/processAgents")
+async def process_agents():
+    csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
+    try:
+        processed_agents = await run_agent_processing(csv_file_path)
+        return {"agents": processed_agents}
+    except Exception as e:
+        print(f"Error in process_agents: {str(e)}")  # Add this line for debugging
+        raise HTTPException(status_code=500, detail=f"Error processing agents: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
