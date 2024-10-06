@@ -20,5 +20,5 @@ Todo EOD:
 - Clean up
 - Test toolhouse integration
 - Full run with our Data 
-- Strech* Generating Data in batches with LLM.
+- Stretch* Generating Data in batches with LLM.
 
