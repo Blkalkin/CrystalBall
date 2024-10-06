@@ -13,4 +13,12 @@ the fastapi server. Use localhost:8000/docs to test.
 - Can request groq with any number of agents parellel/asych 
 - Can dry run with a csv of labled data - 
 - Change prompt as you see fit 
-- Final prompt to o1 
+
+
+Todo EOD:
+- Final prompt to o1
+- Clean up
+- Test toolhouse integration
+- Full run with our Data 
+- Strech* Generating Data in batches with LLM.
+
