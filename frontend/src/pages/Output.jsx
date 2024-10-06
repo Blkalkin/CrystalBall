@@ -1,13 +1,32 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 
-function Output({ prompt = "Sample Prompt", date = "2023-01-01", stock = "S&P 500", result = { trend: "increase", decrease: 10, neutral: 20, increase: 70 }, themes = [
-  { title: "Economic Growth", description: "Economic growth is a key driver of stock market performance. When the economy is growing, businesses tend to perform better, leading to higher stock prices. Investors are more confident in the market, and there is generally more liquidity. This theme explores the various factors that contribute to economic growth, such as consumer spending, business investment, government policies, and global trade." },
-  { title: "Technological Innovation", description: "Technological innovation has a profound impact on the stock market. Companies that are at the forefront of technological advancements often see significant growth in their stock prices. This theme delves into the latest technological trends, such as artificial intelligence, blockchain, and renewable energy, and how they are shaping the future of industries and the stock market. It also examines the risks and opportunities associated with investing in tech-driven companies." },
-  { title: "Geopolitical Events", description: "Geopolitical events can have a major influence on the stock market. Events such as elections, trade wars, and international conflicts can create uncertainty and volatility in the market. This theme analyzes the potential impact of various geopolitical events on different sectors and stocks. It also provides insights into how investors can navigate the complexities of geopolitics to make informed investment decisions." }
-], sources = [{ name: "Sample Source", rationale: "Sample Rationale", categories: ["Cat1", "Cat2"] }] }) {
-    const decreasePercent = 0.2
-    const neutralPercent = 0.3
-    const increasePercent = 0.5
+function Output(
+//   { prompt = "Sample Prompt", date = "2023-01-01", stock = "S&P 500", result = { trend: "increase", decrease: 10, neutral: 20, increase: 70 }, themes = [
+//   { title: "Economic Growth", description: "Economic growth is a key driver of stock market performance. When the economy is growing, businesses tend to perform better, leading to higher stock prices. Investors are more confident in the market, and there is generally more liquidity. This theme explores the various factors that contribute to economic growth, such as consumer spending, business investment, government policies, and global trade." },
+//   { title: "Technological Innovation", description: "Technological innovation has a profound impact on the stock market. Companies that are at the forefront of technological advancements often see significant growth in their stock prices. This theme delves into the latest technological trends, such as artificial intelligence, blockchain, and renewable energy, and how they are shaping the future of industries and the stock market. It also examines the risks and opportunities associated with investing in tech-driven companies." },
+//   { title: "Geopolitical Events", description: "Geopolitical events can have a major influence on the stock market. Events such as elections, trade wars, and international conflicts can create uncertainty and volatility in the market. This theme analyzes the potential impact of various geopolitical events on different sectors and stocks. It also provides insights into how investors can navigate the complexities of geopolitics to make informed investment decisions." }
+// ], sources = [{ name: "Sample Source", rationale: "Sample Rationale", categories: ["Cat1", "Cat2"] }] }
+) {
+
+    const [data, setDate] = useState([]);
+
+    useEffect(() => {
+        try {
+            axios.get('http://crystalball.onrender.com/') // UPDATE THIS LATER AND FIGURE OUT SCHEMA
+            .then((res) => {
+                console.log(res.data);
+                setDate(res.data);
+            })
+        } catch (error) {
+            console.log(error);
+        }
+    }, []);
+
+
+    // const decreasePercent = 0.2
+    // const neutralPercent = 0.3
+    // const increasePercent = 0.5
   
   
     return (
