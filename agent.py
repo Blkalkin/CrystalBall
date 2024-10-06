@@ -1,9 +1,13 @@
-import csv
 import asyncio
+import csv
 import json
 from typing import Dict, List
+
 from groq import AsyncGroq
-from model import Agent, LLMResponse, Direction
+
+from model import Agent, Direction, LLMResponse
+from prompts import get_process_agents_system_prompt, get_process_agents_user_prompt
+
 
 def create_agents_from_csv(csv_file_path: str) -> List[Agent]:
     agents = []
@@ -26,11 +30,9 @@ async def process_agents_with_groq(agents: List[Agent]) -> List[Agent]:
     client = AsyncGroq()
     
     async def process_agent(agent: Agent):
-        system_prompt = """You are role playing this person in a market scenario where the rates are going down 1 point, and your response should be a json where the keys are: "direction" which is either "BUY", "SELL" or "HOLD"
-"strength" which is a float from 0.0 to 1.0, defaulting to 0.0 if direction is "HOLD"
-"rationale" which is a brief rationale behind the decision and likeliness/probability"""
+        system_prompt = get_process_agents_system_prompt()
         
-        user_prompt = f"Type: {agent.type}\nName: {agent.name}\nDescription: {agent.description}"
+        user_prompt = get_process_agents_user_prompt(agent)
         
         try:
             chat_completion = await client.chat.completions.create(
