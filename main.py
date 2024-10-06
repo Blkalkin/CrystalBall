@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from groq import Groq
 from pydantic import BaseModel
+from model import Agent
+
+from toolhouse_helper import get_real_context
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,6 +50,15 @@ async def chat_with_groq(request: ChatRequest):
 async def chat_with_toolhouse(request: ChatRequest):
     # This is a placeholder function for chat completion with Toolhouse
     return ChatResponse(response="This is a placeholder response from Toolhouse")
+
+@app.post("/getRealContext", response_model=ChatResponse)
+async def get_real_context(request: Agent):
+    response = await get_real_context(request.dict())
+    if response is None:
+        raise HTTPException(status_code=500, detail="Error getting real context")
+    return ChatResponse(response=response)
+
+
 
 @app.get("/health")
 async def health_check():
