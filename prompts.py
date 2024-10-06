@@ -17,7 +17,7 @@ Tell me how you would react in this particular scenario. Particularly, would you
 """
 
 
-def get_final_reasoning_system_prompt(event_context: EventContext):
+def get_final_reasoning_system_prompt():
     return f"""You are a sophisticated financial analysis AI designed to aggregate and interpret investment decisions from a diverse group of 1,000 personas, including individuals and institutions. Your primary focus is on analyzing reactions to specific events and their potential impact on the S&P 500 index.
 Your tasks are as follows:
 
@@ -82,7 +82,7 @@ Your response must be a string."""
 
 
 # ACTION NEEDED - NEED TO UPDATE the below to fill in the variables, replace agent_dict with a subset of data
-def get_final_themes_agent_prompt(event_context: EventContext, agent: Agent):
+def get_final_themes_agent_prompt(agent_dict: str, event_context: EventContext, agent: Agent):
     return f"""Analyze the market sentiment for the instrument {event_context.instrument} in response to the following event:
 {event_context.posed_question}
 You have been provided with responses from about 1,000 diverse personas, each representing different types of investors. Each response is in a JSON-like format with the following structure:
