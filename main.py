@@ -6,7 +6,7 @@ from groq import Groq
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 from agent import get_final_reasoning, run_agent_processing
-from model import Agent
+from model import Agent, EventContext
 
 from toolhouse_helper import get_real_context
 
@@ -21,7 +21,9 @@ if not GROQ_API_KEY:
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable is not set")
-
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    raise ValueError("OPENROUTER_API_KEY environment variable is not set")
 class ChatRequest(BaseModel):
     message: str
 
@@ -55,16 +57,19 @@ async def chat_with_groq(request: ChatRequest):
 @app.post("/chatWithOpenAI", response_model=ChatResponse)
 async def chat_with_openai(request: ChatRequest):
     try:
-        client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        client = AsyncOpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=OPENROUTER_API_KEY
+        )
         response = await client.chat.completions.create(
             messages=[
                 {"role": "user", "content": request.message}
             ],
-            model="gpt-4o"
+            model="openai/o1-preview-2024-09-12"
         )
         return ChatResponse(response=response.choices[0].message.content)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error communicating with OpenAI: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error communicating with OpenRouter: {str(e)}")
 
 @app.post("/chatWithToolhouse", response_model=ChatResponse)
 async def chat_with_toolhouse(request: ChatRequest):
@@ -83,7 +88,7 @@ async def health_check():
     return {"status": "ok"}
 
 @app.post("/processAgents")
-async def process_agents(event_context: str):
+async def process_agents(event_context: EventContext):
     csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
     try:
         processed_agents = await run_agent_processing(csv_file_path, event_context)
@@ -93,7 +98,7 @@ async def process_agents(event_context: str):
         raise HTTPException(status_code=500, detail=f"Error processing agents: {str(e)}")
 
 @app.post("/getFinalReasoning")
-async def process_agents_and_get_final_reasoning(event_context: str):
+async def process_agents_and_get_final_reasoning(event_context: EventContext):
     csv_file_path = '/Users/balaji/Downloads/AgentTestData.csv'  # Hardcoded CSV file path
     try:
         processed_agents = await run_agent_processing(csv_file_path, event_context)
