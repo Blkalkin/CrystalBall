@@ -53,10 +53,10 @@ async def get_question_type(event_context: str):
         return None
 
 
-def get_real_context(agent_object, question):
+async def get_real_context(agent_object, question):
     name = agent_object["name"]
 
-    question_type = get_question_type(question)
+    question_type = await get_question_type(question)
     if question_type is None:
         return None
 
