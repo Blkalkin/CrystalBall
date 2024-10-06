@@ -41,11 +41,48 @@ Your response must be a JSON-like string containing the following keys:
 "hold_percentage": Float (0.0 to 100.0)
 "weighted_buy_probability": Float (0.0 to 1.0)
 "weighted_sell_probability": Float (0.0 to 1.0)
-"summary": String (concise analysis of the overall sentiment and key factors)
-"notable_divergences": String (any significant differences in opinion among investor types)"""
+"summary": String (a 1 sentence concise analysis of the overall sentiment, key factors, and any notable divergences)"""
 
 
 def get_final_reasoning_agent_prompt(agent_dict: str, event_context: EventContext):
+    return f"""Analyze the market sentiment for the instrument {event_context.instrument} in response to the following event:
+{event_context.posed_question}
+You have been provided with responses from about 1,000 diverse personas, each representing different types of investors. Each response is in a JSON-like format with the following structure:
+{{
+  "name": "Investor/Institution Name",
+  "category": "Investor Type",
+  "subcategory": "Investor Subtype",
+  "weight": "Weight of the investor's response depending on their market stake",
+  "description": "Description of the investor's approach and themself",
+  "isReal": Boolean
+  "realContext": "Additional context for real investors (if applicable)",
+  "llmResponse": {{
+    "direction": "BUY" or "SELL" or "HOLD", 
+    "strength": Float (0.0 to 1.0),
+    "rationale": "Brief explanation for the decision. Please keep this under 40 words"
+  }}
+}}
+Based on these responses, perform your analysis as outlined in the system prompt. Ensure your response is a properly formatted JSON-like string that can be parsed using .jsonify(). 
+
+Here are the responses from the 1,000 personas:
+{agent_dict}
+"""
+
+
+# ACTION NEEDED - NEED TO UPDATE the below to fill in the variable DECISION
+def get_final_themes_system_prompt(event_context: EventContext, DECISION: str):
+    return f"""You are a sophisticated financial analysis AI designed to aggregate and interpret investment decisions from a diverse group of 1,000 personas, including individuals and institutions. Your primary focus is on analyzing reactions to specific events and their potential impact on the S&P 500 index.
+Your tasks are as follows:
+
+Aggregate the rationale from the personas who made the decision to {DECISION}.
+
+Based on this, write a 1 paragraph summary of why these personas made the decision to {DECISION}. Please be sure to outline the key factors and themes that emerged from the rationale, and any notable divergences in opinion among different types of investors (e.g., institutional vs. retail).
+
+Your response must be a string."""
+
+
+# ACTION NEEDED - NEED TO UPDATE the below to fill in the variables, replace agent_dict with a subset of data
+def get_final_themes_agent_prompt(agent_dict: str, event_context: EventContext):
     return f"""Analyze the market sentiment for the instrument {event_context.instrument} in response to the following event:
 {event_context.posed_question}
 You have been provided with responses from about 1,000 diverse personas, each representing different types of investors. Each response is in a JSON-like format with the following structure:
@@ -66,6 +103,48 @@ You have been provided with responses from about 1,000 diverse personas, each re
 Based on these responses, perform your analysis as outlined in the system prompt. Ensure your response is a properly formatted JSON-like string that can be parsed using .jsonify().
 
 Here are the responses from the 1,000 personas:
+{agent_dict}
+"""
+
+
+# ACTION NEEDED - NEED TO UPDATE the below to fill in the variable DECISION
+def get_category_summary_system_prompt(event_context: EventContext, subcategory: str):
+    return f"""You are a sophisticated financial analysis AI designed to aggregate and interpret investment decisions from a diverse group of 1,000 personas, including individuals and institutions. Your primary focus is on analyzing reactions to specific events and their potential impact on the S&P 500 index.
+Your tasks are as follows:
+
+Aggregate the rationale from all {subcategory} personas.
+
+Based on this, write a summary of what these personas think about the posed question. Please be sure to outline the key factors and themes that emerged from the rationale, and any notable divergences in opinion.
+
+Your response must be a JSON-like string containing the following keys:
+"Personas": {subcategory}
+"title": "A short title for this summary"
+"description": "The summary of what these personas think about the posed question"
+"""
+
+
+# ACTION NEEDED - NEED TO UPDATE the below to fill in the variables
+def get_category_summary_agent_prompt(agent_dict: str, event_context: EventContext):
+    return f"""Analyze the market sentiment for the instrument {event_context.instrument} in response to the following event:
+{event_context.posed_question}
+You have been provided with responses from about 1,000 diverse personas, each representing different types of investors. Each response is in a JSON-like format with the following structure:
+{{
+  "name": "Investor/Institution Name",
+  "category": "Investor Type",
+  "subcategory": "Investor Subtype",
+  "weight": "Weight of the investor's response depending on their market stake",
+  "description": "Description of the investor's approach and themself",
+  "isReal": Boolean
+  "realContext": "Additional context for real investors (if applicable)",
+  "llmResponse": {{
+    "direction": "BUY" or "SELL" or "HOLD", 
+    "strength": Float (0.0 to 1.0),
+    "rationale": "Brief explanation for the decision"
+  }}
+}}
+Based on these responses, perform your analysis as outlined in the system prompt. Ensure your response is a properly formatted JSON-like string that can be parsed using .jsonify().
+
+Here are the responses from the personas:
 {agent_dict}
 """
 
@@ -101,4 +180,3 @@ def get_toolhouse_real_context_prompt(agent_name: str, question_type: str):
     Use web_search and perplexity_byok to find me information on {agent_name} general investing strategy, how have they reacted to past {question_type} \
         and how has it impacted their investment strategies and concrete decisions (if any)
     """
-
