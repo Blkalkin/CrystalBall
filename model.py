@@ -7,6 +7,11 @@ class Direction(str, Enum):
     HOLD = "HOLD"
     SELL = "SELL"
 
+class EventContext(BaseModel):
+    posed_question: str  
+    instrument: str
+    date: str
+
 class LLMResponse(BaseModel):
     direction: Direction
     strength: float
@@ -17,7 +22,9 @@ class LLMResponse(BaseModel):
 
 class Agent(BaseModel):
     name: str
-    type: str
+    category: str
+    subcategory: str
+    weight: float
     description: str
     isReal: bool = False
     realContext: Optional[str] = ''
