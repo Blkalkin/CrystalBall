@@ -11,15 +11,8 @@ function Output(
 ) {
 
     const location = useLocation();
-    // const { searchValue, selectedStock, selectedDate } = location.state;
-    // const [data, setData] = useState({
-    //   prompt: searchValue,
-    //   date: selectedDate,
-    //   stock: selectedStock,
-    //   result: { trend: "", decrease: 0, neutral: 0, increase: 0 },
-    //   themes: [],
-    //   sources: []
-    // });
+    const { searchValue, selectedStock, selectedDate } = location.state;
+
 
     useEffect(() => {
         try {
@@ -44,45 +37,41 @@ function Output(
             "summary": "This is an explanation of what happened"
             }`
 
-    const stock = "S&P 500"
-    const prompt = "taylor announces a new tour"
-    const date = "2024-05-01"
     const result = JSON.parse(resultJSON);
 
-    const themes_result_sell = { 
-        "Personas": "Investor/Institution Name",
-        "title": "A short title for this summary",
-        "description": "A description"
+    const getAgentsThoughts = () => {
+        axios.post('http://crystalball.onrender.com/agents')
+        .then((res) => {
+            return res.data;
+        })
+        .catch((err) => {
+            console.log(err);
+        })
     }
-    const themes_result_buy= { 
-        "Personas": "Investor/Institution Name",
-        "title": "A short title for this summary",
-        "description": "A description"
-    }
-    const themes_result_hold= { 
-        "Personas": "Investor/Institution Name",
-        "title": "A short title for this summary",
-        "description": "A description"
-    }
-
-    const themes = [
-        { title: "Economic Growth", description: "Economic growth is a key driver of stock market performance. When the economy is growing, businesses tend to perform better, leading to higher stock prices. Investors are more confident in the market, and there is generally more liquidity. This theme explores the various factors that contribute to economic growth, such as consumer spending, business investment, government policies, and global trade." },
-        { title: "Technological Innovation", description: "Technological innovation has a profound impact on the stock market. Companies that are at the forefront of technological advancements often see significant growth in their stock prices. This theme delves into the latest technological trends, such as artificial intelligence, blockchain, and renewable energy, and how they are shaping the future of industries and the stock market. It also examines the risks and opportunities associated with investing in tech-driven companies." },
-        { title: "Geopolitical Events", description: "Geopolitical events can have a major influence on the stock market. Events such as elections, trade wars, and international conflicts can create uncertainty and volatility in the market. This theme analyzes the potential impact of various geopolitical events on different sectors and stocks. It also provides insights into how investors can navigate the complexities of geopolitics to make informed investment decisions." }
-    ]
-    const sources = [
-        { name: "Sample Source", rationale: "Sample Rationale", categories: ["Cat1", "Cat2"] }
-    ] 
 
   
   
     return (
     <div className="flex flex-col items-center justify-start min-h-screen pt-20">
       <div className="w-full max-w-4xl">
+        <div className="flex justify-center space-x-4 mb-6">
+          <button 
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow-sm hover:bg-blue-600 focus:outline-none"
+            onClick={() => getAgentsThoughts()}
+          >
+            Get agents thoughts
+          </button>
+          <button 
+            className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-sm hover:bg-green-600 focus:outline-none"
+            onClick={() => console.log("Get predictions clicked")}
+          >
+            Get predictions
+          </button>
+        </div>
         <div className="flex flex-col items-start mb-6">
-          <h1 className="text-2xl font-bold mb-3">{stock} impact if {prompt}</h1>
+          <h1 className="text-2xl font-bold mb-3">{selectedStock} impact if {searchValue}</h1>
           <div className="flex flex-wrap gap-2 mb-3">
-            <span className="text-gray-500 text-sm">{date}</span>
+            <span className="text-gray-500 text-sm">{selectedDate}</span>
           </div>
         </div>
 
@@ -113,7 +102,7 @@ function Output(
           </div>
         </div>
 
-        <div className="mb-8 ">
+        {/* <div className="mb-8 ">
           <h2 className="text-2xl font-semibold mb-2 text-left">Investor Rationale</h2>
           <div className="mb-4">
             <h3 className="text-lg font-semibold text-left border-b border-gray-300 pt-2">Sell Themes</h3>
@@ -127,7 +116,7 @@ function Output(
             <h3 className="text-lg font-semibold text-left border-b border-gray-300 pt-2">Hold Themes</h3>
             <p className="text-left mt-2">{themes_result_hold.description}</p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
