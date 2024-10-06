@@ -1,16 +1,16 @@
 // Home.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CrystalBall from '../assets/CrystalBall.png'; // Assuming the image is in the assets folder
 
 function Home() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedStock, setSelectedStock] = useState('S&P 500');
+  const navigate = useNavigate();
 
   function agentAnalysis(searchValue, selectedStock, selectedDate) {
-    console.log("Search Value:", searchValue);
-    console.log("Selected Stock:", selectedStock);
-    console.log("Selected Date:", selectedDate);
+    navigate('/output', { state: { searchValue, selectedStock, selectedDate } });
   }
   
 
