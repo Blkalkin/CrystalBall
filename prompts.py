@@ -9,7 +9,7 @@ def get_process_agents_system_prompt(event_context: EventContext):
 
 
 def get_process_agents_user_prompt(agent: Agent, event_context: EventContext):
-    return f"""You are playing the role of {agent.name}, who or which is a {agent.type}. Here's a description of your investment approach and you: {agent.description}
+    return f"""You are playing the role of {agent.name}, who or which is a {agent.category}. Here's a description of your investment approach and you: {agent.description}
 
 A recent event has come up in the news and social media: {event_context.posed_question}. The date of this event is {event_context.date}.
 

@@ -24,7 +24,7 @@ class Agent(BaseModel):
     name: str
     category: str
     subcategory: str
-    weight: float
+    weight: str
     description: str
     isReal: bool = False
     realContext: Optional[str] = ''

@@ -27,10 +27,12 @@ def create_agents_from_csv(csv_file_path: str) -> List[Agent]:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             agent = Agent(
-                type=row['Type'],
+                subcategory=row['Subcategory (id)'],
                 name=row['Name'],
+                category=row['Category'],
                 description=row['Description'],
-                isReal=False
+                isReal=row['isReal'],
+                weight=row['Weight']
             )
             agents.append(agent)
     
@@ -53,7 +55,7 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
     client = AsyncGroq()
     
     async def process_agent(agent: Agent, model: str):
-        system_prompt = get_process_agents_system_prompt()
+        system_prompt = get_process_agents_system_prompt(event_context)
         user_prompt = get_process_agents_user_prompt(agent, event_context)
         
         try:
@@ -66,30 +68,31 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
             )
 
             response_content = chat_completion.choices[0].message.content
-            
-            preprocessed_content = preprocess_json(response_content)
-            jsonified_content = json.dumps(preprocessed_content)
-            llm_response = json.loads(jsonified_content)
-            print(f"Agent: {agent.name}, Model: {model}, Response: {llm_response}")
-            agent.llmResponse = LLMResponse(
-                direction=Direction(llm_response["direction"]),
-                strength=float(llm_response["strength"]),
-                rationale=str(llm_response["rationale"])
-            )
-        except json.JSONDecodeError as e:
-            print(f"JSON parsing error for agent {agent.name} with model {model}: {str(e)}")
-            agent.llmResponse = LLMResponse(
-                direction=Direction.HOLD,
-                strength=0.0,
-                rationale=f"Error in processing response with model {model}"
-            )
+
+            try:
+                preprocessed_content = preprocess_json(response_content)
+                jsonified_content = json.dumps(preprocessed_content)
+                llm_response = json.loads(jsonified_content)
+                print(f"Agent: {agent.name}, Model: {model}, Response: {llm_response}")
+                agent.llmResponse = LLMResponse(
+                    direction=Direction(llm_response["direction"]),
+                    strength=float(llm_response["strength"]),
+                    rationale=str(llm_response["rationale"])
+                )
+            except json.JSONDecodeError as e:
+                print(f"JSON parsing error for agent {agent.name} with model {model}: {str(e)}")
+                agent.llmResponse = LLMResponse(
+                    direction=Direction.HOLD,
+                    strength=0.0,
+                    rationale=f"Error in processing response with model {model}. Raw content: {response_content}"
+                )
         except Exception as e:
             print(f"Error processing agent {agent.name} with model {model}: {str(e)}")
             agent.llmResponse = LLMResponse(
-                direction=Direction.HOLD,
-                strength=0.0,
-                rationale=f"Error in processing response with model {model}"
-            )
+                    direction=Direction.HOLD,
+                    strength=0.0,
+                    rationale=f"Error in processing response with model {model}. Raw content: {response_content}"
+                )
         
         return agent
 
@@ -109,10 +112,24 @@ async def process_agents_with_groq(agents: List[Agent], event_context: str) -> L
         model = models[i % len(models)]
         non_real_agent_tasks.append(process_agent(agent, model))
 
-    # Combine all tasks and process them
+    # Process agents in batches
     all_tasks = real_agent_tasks + non_real_agent_tasks
-    processed_agents = await asyncio.gather(*all_tasks)
-    
+    batch_size = len(all_tasks) // 3  # Divide tasks into 3 batches
+    processed_agents = []
+
+    for i in range(3):
+        start_idx = i * batch_size
+        end_idx = start_idx + batch_size if i < 2 else len(all_tasks)
+        
+        print(f"Processing batch {i+1} of 3...")
+        batch_tasks = all_tasks[start_idx:end_idx]
+        batch_results = await asyncio.gather(*batch_tasks)
+        processed_agents.extend(batch_results)
+        
+        if i < 2:  # Don't wait after the last batch
+            print(f"Waiting 60 seconds before next batch...")
+            await asyncio.sleep(60)  # Wait for 60 seconds
+
     return processed_agents
 
 async def process_agents(csv_file_path: str, event_context: EventContext) -> List[Agent]:
@@ -136,7 +153,7 @@ async def get_final_reasoning(processed_agents: List[Dict], event_context: Event
     agent_data = [
         {
             "name": agent["name"],
-            "category": agent["type"],
+            "category": agent["category"],
             "direction": agent["llmResponse"]["direction"],
             "probability": agent["llmResponse"]["strength"],
         }
